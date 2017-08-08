@@ -25,8 +25,6 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-requests.packages.urllib3.disable_warnings()
-
 
 # Define the App Class
 class MobileIronConnector(BaseConnector):

@@ -12,7 +12,7 @@
     "product_name": "MobileIron",
     "product_version_regex": ".*",
     "logo": "mobileiron.png",
-    "min_phantom_version": "1.2.236",
+    "min_phantom_version": "3.0.190",
     "license": "Copyright (c) Phantom Cyber Corporation 2015-2016",
     "configuration": {
       "url": {

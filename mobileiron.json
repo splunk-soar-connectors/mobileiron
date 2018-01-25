@@ -14,7 +14,7 @@
     "logo": "logo_mobileiron.svg",
     "logo_dark": "logo_mobileiron_dark.svg",
     "min_phantom_version": "3.0.190",
-    "license": "Copyright (c) Phantom Cyber Corporation 2015-2016",
+    "license": "Copyright (c) Phantom Cyber Corporation, 2015-2018",
     "configuration": {
         "url": {
             "data_type": "string",

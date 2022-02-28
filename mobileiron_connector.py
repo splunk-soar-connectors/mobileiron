@@ -235,6 +235,8 @@ class MobileIronConnector(BaseConnector):
 
         ret_val, response = self._make_rest_call(endpoint, request_params, action_result)
 
+        message = ''
+
         if response:
             if 'messages' in response:
                 if 'message' in response['messages']:

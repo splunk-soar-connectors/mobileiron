@@ -16,7 +16,7 @@
     "logo_dark": "logo_mobileiron_dark.svg",
     "min_phantom_version": "5.1.0",
     "fips_compliant": false,
-    "license": "Copyright (c) 2015-2022 Splunk Inc.",
+    "license": "Copyright (c) 2016-2022 Splunk Inc.",
     "configuration": {
         "url": {
             "data_type": "string",

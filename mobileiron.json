@@ -1,19 +1,22 @@
 {
     "appid": "3c722a88-5dcf-4059-89ae-9ae3063b9ecb",
     "name": "MobileIron",
-    "description": "This app allows endpoint management on MobileIron by implementing actions such as 'list devices', 'lock devices' and 'unlock device'.",
-    "publisher": "Phantom",
+    "description": "This app allows endpoint management on MobileIron by implementing actions such as 'list devices', 'lock devices' and 'unlock device'",
+    "publisher": "Splunk Community",
     "type": "endpoint",
-    "main_module": "mobileiron_connector.pyc",
-    "app_version": "1.0.15",
+    "main_module": "mobileiron_connector.py",
+    "app_version": "2.0.0",
+    "python_version": "3",
     "utctime_updated": "2022-01-07T21:13:09.000000Z",
     "package_name": "phantom_mobileiron",
     "product_vendor": "MobileIron",
     "product_name": "MobileIron",
     "product_version_regex": ".*",
-    "logo": "mobileiron.png",
-    "min_phantom_version": "3.0.190",
-    "license": "Copyright (c) Phantom Cyber Corporation 2015-2016",
+    "logo": "logo_mobileiron.svg",
+    "logo_dark": "logo_mobileiron_dark.svg",
+    "min_phantom_version": "5.1.0",
+    "fips_compliant": false,
+    "license": "Copyright (c) 2015-2022 Splunk Inc.",
     "configuration": {
         "url": {
             "data_type": "string",
@@ -24,27 +27,24 @@
         "verify_server_cert": {
             "data_type": "boolean",
             "description": "Verify server certificate",
-            "required": true,
             "order": 1,
             "default": true
         },
         "username": {
             "data_type": "string",
             "order": 2,
-            "description": "Username",
-            "required": false
+            "description": "Username"
         },
         "password": {
             "data_type": "password",
             "order": 3,
-            "description": "Password",
-            "required": false
+            "description": "Password"
         }
     },
     "actions": [
         {
             "action": "test connectivity",
-            "description": "Validate the asset configuration for connectivity. This action runs a quick query on the device to check the connection and credentials.",
+            "description": "Validate the asset configuration for connectivity. This action runs a quick query on the device to check the connection and credentials",
             "type": "test",
             "identifier": "test_asset_connectivity",
             "read_only": true,
@@ -83,7 +83,11 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.parameter.limit",
@@ -311,6 +315,30 @@
                 {
                     "data_path": "summary.total_objects_successful",
                     "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.nonGMS",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.authOnly",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.multiUser",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.TLVVersion",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.migrationStatus",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.temporarySessionOnly",
+                    "data_type": "boolean"
                 }
             ],
             "versions": "EQ(*)"
@@ -342,7 +370,11 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
@@ -397,7 +429,11 @@
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
@@ -445,14 +481,18 @@
             },
             "render": {
                 "width": 12,
-                "title": "List Devices",
+                "title": "get System Info",
                 "type": "table",
                 "height": 5
             },
             "output": [
                 {
                     "data_path": "action_result.status",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "success",
+                        "failed"
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
@@ -681,6 +721,38 @@
                 },
                 {
                     "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.device.nonGMS",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.device.authOnly",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.device.multiUser",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.device.TLVVersion",
+                    "data_type": "numeric"
+                },
+                {
+                    "data_path": "action_result.data.*.device.migrationStatus",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.device.temporarySessionOnly",
+                    "data_type": "boolean"
+                },
+                {
+                    "data_path": "action_result.data.*.messages",
+                    "data_type": "string"
+                },
+                {
+                    "data_path": "action_result.data.*.totalCount",
                     "data_type": "numeric"
                 }
             ],

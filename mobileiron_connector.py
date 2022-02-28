@@ -1,6 +1,6 @@
 # File: mobileiron_connector.py
 #
-# Copyright (c) 2014-2016 Splunk Inc.
+# Copyright (c) 2015-2022 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
 #
 #
 # Phantom App imports
-import phantom.app as phantom
+import re
 
-from phantom.base_connector import BaseConnector
+import phantom.app as phantom
+import requests
+from bs4 import BeautifulSoup
 from phantom.action_result import ActionResult
+from phantom.base_connector import BaseConnector
 
 # Imports local to this App
 from mobileiron_consts import *
-
-import requests
-from bs4 import BeautifulSoup
-import re
 
 
 # Define the App Class
@@ -47,14 +46,14 @@ class MobileIronConnector(BaseConnector):
 
         # Base URL
         self._base_url = config[MOBILEIRON_JSON_DEVICE_URL]
-        if (self._base_url.endswith('/')):
+        if self._base_url.endswith('/'):
             self._base_url = self._base_url[:-1]
 
         self._host = self._base_url[self._base_url.find('//') + 2:]
         self._headers = {'Accept': 'application/json'}
         self._api_uri = '/api/v1'
 
-        self.__uuid_regex = re.compile('[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}\Z', re.I)
+        self.__uuid_regex = re.compile(r'[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}\Z', re.I)
 
         return phantom.APP_SUCCESS
 
@@ -70,18 +69,18 @@ class MobileIronConnector(BaseConnector):
         resp_json = None
 
         try:
-            if (method == "get"):
+            if method == "get":
                 r = requests.get(self._base_url + self._api_uri + endpoint, auth=(username, password), params=request_params, headers=headers,
                         verify=config[phantom.APP_JSON_VERIFY])
             else:
                 r = requests.put(self._base_url + self._api_uri + endpoint, auth=(username, password), params=request_params, headers=headers,
                         verify=config[phantom.APP_JSON_VERIFY])
         except Exception as e:
-            return (action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_SERVER_CONNECTION, e), resp_json)
+            return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_SERVER_CONNECTION, e), resp_json
 
         # self.debug_print('REST url: {0}'.format(r.url))
 
-        if (r.status_code != requests.codes.ok):  # pylint: disable=E1101
+        if r.status_code != requests.codes.ok:  # pylint: disable=E1101
             try:
                 soup = BeautifulSoup(r.text)
                 text = soup.get_text()
@@ -94,10 +93,10 @@ class MobileIronConnector(BaseConnector):
 
         try:
             resp_json = r.json()
-        except Exception as e:
-            return (action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_JSON_PARSE, data=r.text), None)
+        except Exception:
+            return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_JSON_PARSE, data=r.text), None
 
-        return (phantom.APP_SUCCESS, resp_json)
+        return phantom.APP_SUCCESS, resp_json
 
     def _test_connectivity(self, param):
 
@@ -116,7 +115,7 @@ class MobileIronConnector(BaseConnector):
 
         ret_val, response = self._make_rest_call(endpoint, request_params, action_result)
 
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             self.set_status(phantom.APP_ERROR, action_result.get_message())
             self.append_to_message(MOBILEIRON_ERR_CONNECTIVITY_TEST)
@@ -130,17 +129,17 @@ class MobileIronConnector(BaseConnector):
 
         try:
             offset = int(param[MOBILEIRON_JSON_START_INDEX])
-            if (offset < 0):
+            if offset < 0:
                 return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_START_INDEX)
         except:
-                return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_START_INDEX)
+            return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_START_INDEX)
 
         try:
             offset = int(param[MOBILEIRON_JSON_LIMIT])
-            if (offset <= 0):
+            if offset <= 0:
                 return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_LIMIT)
         except:
-                return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_LIMIT)
+            return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_LIMIT)
 
         # Progress
         self.save_progress(MOBILEIRON_USING_BASE_URL, base_url=self._base_url)
@@ -155,22 +154,22 @@ class MobileIronConnector(BaseConnector):
 
         ret_val, response = self._make_rest_call(endpoint, request_params, action_result)
 
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             self.debug_print(action_result.get_message())
             return action_result.get_status()
 
-        if (not response.get('totalCount')):
+        if not response.get('totalCount'):
             return action_result.get_status()
 
-        if (not response.get('devices')):
+        if not response.get('devices'):
             return action_result.get_status()
 
         device_list = response['devices'].get('device')
-        if (not device_list):
+        if not device_list:
             return action_result.get_status()
 
         # if there is only one device, then we get a dictionary
-        if (type(device_list) == dict):
+        if type(device_list) == dict:
             device_list = [device_list]
 
         action_result.update_summary({MOBILEIRON_JSON_TOTAL_DEVICES: len(device_list)})
@@ -184,7 +183,7 @@ class MobileIronConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        if (not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID])):
+        if not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID]):
             return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_UUID)
 
         # Progress
@@ -195,7 +194,7 @@ class MobileIronConnector(BaseConnector):
 
         endpoint = '/dm/devices/lock/{0}'.format(param[MOBILEIRON_JSON_UUID])
         reason = param.get(MOBILEIRON_JSON_REASON, '')
-        reason += ". " if (reason) else ""
+        reason += ". " if reason else ""
         reason += "Locked via Phantom"
         request_params = {'reason': reason}
 
@@ -203,12 +202,12 @@ class MobileIronConnector(BaseConnector):
 
         message = ''
 
-        if (response):
-            if ('messages' in response):
-                if ('message' in response['messages']):
+        if response:
+            if 'messages' in response:
+                if 'message' in response['messages']:
                     message = "Message from server: {0}".format(response['messages']['message'])
 
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             action_result.append_to_message(message)
             self.debug_print(action_result.get_message())
             return action_result.get_status()
@@ -219,7 +218,7 @@ class MobileIronConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        if (not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID])):
+        if not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID]):
             return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_UUID)
 
         # Progress
@@ -230,18 +229,18 @@ class MobileIronConnector(BaseConnector):
 
         endpoint = '/dm/devices/unlock/{0}'.format(param[MOBILEIRON_JSON_UUID])
         reason = param.get(MOBILEIRON_JSON_REASON, '')
-        reason += ". " if (reason) else ""
+        reason += ". " if reason else ""
         reason += "Unlocked via Phantom"
         request_params = {'reason': reason}
 
         ret_val, response = self._make_rest_call(endpoint, request_params, action_result)
 
-        if (response):
-            if ('messages' in response):
-                if ('message' in response['messages']):
+        if response:
+            if 'messages' in response:
+                if 'message' in response['messages']:
                     message = "Message from server: {0}".format(response['messages']['message'])
 
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             action_result.append_to_message(message)
             self.debug_print(action_result.get_message())
             return action_result.get_status()
@@ -252,7 +251,7 @@ class MobileIronConnector(BaseConnector):
 
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        if (not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID])):
+        if not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID]):
             return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_UUID)
 
         # Progress
@@ -267,15 +266,15 @@ class MobileIronConnector(BaseConnector):
 
         message = ''
 
-        if (response):
-            if ('messages' in response):
-                if ('message' in response['messages']):
+        if response:
+            if 'messages' in response:
+                if 'message' in response['messages']:
                     message = "Message from server: {0}".format(response['messages']['message'])
 
-        if (response):
+        if response:
             action_result.add_data(response)
 
-        if (phantom.is_fail(ret_val)):
+        if phantom.is_fail(ret_val):
             action_result.append_to_message(message)
             self.debug_print(action_result.get_message())
             return action_result.get_status()
@@ -291,28 +290,30 @@ class MobileIronConnector(BaseConnector):
 
         self.debug_print("action_id", self.get_action_identifier())
 
-        if (action_id == phantom.ACTION_ID_TEST_ASSET_CONNECTIVITY):
+        if action_id == phantom.ACTION_ID_TEST_ASSET_CONNECTIVITY:
             ret_val = self._test_connectivity(param)
-        elif (action_id == self.ACTION_ID_LIST_DEVICES):
+        elif action_id == self.ACTION_ID_LIST_DEVICES:
             ret_val = self._list_devices(param)
-        elif (action_id == self.ACTION_ID_LOCK_DEVICE):
+        elif action_id == self.ACTION_ID_LOCK_DEVICE:
             ret_val = self._lock_device(param)
-        elif (action_id == self.ACTION_ID_UNLOCK_DEVICE):
+        elif action_id == self.ACTION_ID_UNLOCK_DEVICE:
             ret_val = self._unlock_device(param)
-        elif (action_id == self.ACTION_ID_GET_SYSTEM_INFO):
+        elif action_id == self.ACTION_ID_GET_SYSTEM_INFO:
             ret_val = self._get_system_info(param)
 
         return ret_val
 
+
 if __name__ == '__main__':
 
-    import sys
     import json
+    import sys
+
     import pudb
     pudb.set_trace()
 
-    if (len(sys.argv) < 2):
-        print "No test json specified as input"
+    if len(sys.argv) < 2:
+        print("No test json specified as input")
         exit(0)
 
     with open(sys.argv[1]) as f:
@@ -323,6 +324,6 @@ if __name__ == '__main__':
         connector = MobileIronConnector()
         connector.print_progress_message = True
         ret_val = connector._handle_action(json.dumps(in_json), None)
-        print json.dumps(json.loads(ret_val), indent=4)
+        print(json.dumps(json.loads(ret_val), indent=4))
 
     exit(0)

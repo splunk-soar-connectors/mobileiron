@@ -1,7 +1,7 @@
 {
     "appid": "3c722a88-5dcf-4059-89ae-9ae3063b9ecb",
     "name": "MobileIron",
-    "description": "This app allows endpoint management on MobileIron by implementing actions such as 'list devices', 'lock devices' and 'unlock device'",
+    "description": "This app allows endpoint management on MobileIron by implementing containment and investigative actions",
     "publisher": "Splunk Community",
     "type": "endpoint",
     "main_module": "mobileiron_connector.py",

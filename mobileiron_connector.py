@@ -57,6 +57,9 @@ class MobileIronConnector(BaseConnector):
 
         return phantom.APP_SUCCESS
 
+    def finalize(self):
+        return phantom.APP_SUCCESS
+
     def _make_rest_call(self, endpoint, request_params, action_result, method="get"):
 
         config = self.get_config()
@@ -83,8 +86,11 @@ class MobileIronConnector(BaseConnector):
         if r.status_code != requests.codes.ok:  # pylint: disable=E1101
             try:
                 soup = BeautifulSoup(r.text)
+                # Remove the script, style, footer and navigation part from the HTML message
+                for element in soup(["script", "style", "footer", "nav"]):
+                    element.extract()
                 text = soup.get_text()
-            except:
+            except Exception:
                 return (action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_FROM_SERVER, status=r.status_code,
                     detail=r.text), resp_json)
             else:
@@ -131,14 +137,14 @@ class MobileIronConnector(BaseConnector):
             offset = int(param[MOBILEIRON_JSON_START_INDEX])
             if offset < 0:
                 return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_START_INDEX)
-        except:
+        except Exception:
             return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_START_INDEX)
 
         try:
-            offset = int(param[MOBILEIRON_JSON_LIMIT])
-            if offset <= 0:
+            limit = int(param[MOBILEIRON_JSON_LIMIT])
+            if limit <= 0:
                 return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_LIMIT)
-        except:
+        except Exception:
             return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_INVALID_INPUT, param=MOBILEIRON_JSON_LIMIT)
 
         # Progress
@@ -316,7 +322,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 2:
         print("No test json specified as input")
-        exit(0)
+        sys.exit(0)
 
     with open(sys.argv[1]) as f:
         in_json = f.read()
@@ -328,4 +334,4 @@ if __name__ == '__main__':
         ret_val = connector._handle_action(json.dumps(in_json), None)
         print(json.dumps(json.loads(ret_val), indent=4))
 
-    exit(0)
+    sys.exit(0)

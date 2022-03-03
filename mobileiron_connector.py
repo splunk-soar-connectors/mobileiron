@@ -74,10 +74,10 @@ class MobileIronConnector(BaseConnector):
         try:
             if method == "get":
                 r = requests.get(self._base_url + self._api_uri + endpoint, auth=(username, password), params=request_params, headers=headers,
-                        verify=config[phantom.APP_JSON_VERIFY])
+                        verify=config[phantom.APP_JSON_VERIFY], timeout=MOBILEIRON_DEFAULT_TIMEOUT)
             else:
                 r = requests.put(self._base_url + self._api_uri + endpoint, auth=(username, password), params=request_params, headers=headers,
-                        verify=config[phantom.APP_JSON_VERIFY])
+                        verify=config[phantom.APP_JSON_VERIFY], timeout=MOBILEIRON_DEFAULT_TIMEOUT)
         except Exception as e:
             return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_SERVER_CONNECTION, e), resp_json
 

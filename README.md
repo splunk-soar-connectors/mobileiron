@@ -1,14 +1,14 @@
 [comment]: # "Auto-generated SOAR connector documentation"
 # MobileIron
 
-Publisher: Phantom  
-Connector Version: 1\.0\.14  
+Publisher: Splunk Community  
+Connector Version: 2\.0\.0  
 Product Vendor: MobileIron  
 Product Name: MobileIron  
 Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 3\.0\.190  
+Minimum Product Version: 5\.1\.0  
 
-This app allows endpoint management on MobileIron by implementing actions such as 'list devices', 'lock devices' and 'unlock device'\.
+This app allows endpoint management on MobileIron by implementing containment and investigative actions
 
 ### Configuration Variables
 The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a MobileIron asset in SOAR.
@@ -16,19 +16,19 @@ The below configuration variables are required for this Connector to operate.  T
 VARIABLE | REQUIRED | TYPE | DESCRIPTION
 -------- | -------- | ---- | -----------
 **url** |  required  | string | Device URL, e\.g\. https\://mycore\.mobileiron\.com
-**verify\_server\_cert** |  required  | boolean | Verify server certificate
+**verify\_server\_cert** |  optional  | boolean | Verify server certificate
 **username** |  optional  | string | Username
 **password** |  optional  | password | Password
 
 ### Supported Actions  
-[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity\. This action runs a quick query on the device to check the connection and credentials\.  
+[test connectivity](#action-test-connectivity) - Validate the asset configuration for connectivity\. This action runs a quick query on the device to check the connection and credentials  
 [list devices](#action-list-devices) - Get a list of active devices  
 [lock device](#action-lock-device) - Lock the device  
 [unlock device](#action-unlock-device) - Unlock the device  
 [get system info](#action-get-system-info) - Get info about a device  
 
 ## action: 'test connectivity'
-Validate the asset configuration for connectivity\. This action runs a quick query on the device to check the connection and credentials\.
+Validate the asset configuration for connectivity\. This action runs a quick query on the device to check the connection and credentials
 
 Type: **test**  
 Read only: **True**
@@ -105,7 +105,13 @@ action\_result\.data\.\*\.model | string |
 action\_result\.data\.\*\.statusCode | numeric | 
 action\_result\.summary\.total\_devices | numeric | 
 summary\.total\_objects | numeric | 
-summary\.total\_objects\_successful | numeric |   
+summary\.total\_objects\_successful | numeric | 
+action\_result\.data\.\*\.nonGMS | boolean | 
+action\_result\.data\.\*\.authOnly | boolean | 
+action\_result\.data\.\*\.multiUser | boolean | 
+action\_result\.data\.\*\.TLVVersion | numeric | 
+action\_result\.data\.\*\.migrationStatus | string | 
+action\_result\.data\.\*\.temporarySessionOnly | boolean |   
 
 ## action: 'lock device'
 Lock the device
@@ -216,3 +222,11 @@ action\_result\.data\.\*\.device\.statusCode | numeric |
 action\_result\.summary\.total\_devices | numeric | 
 summary\.total\_objects | numeric | 
 summary\.total\_objects\_successful | numeric | 
+action\_result\.data\.\*\.device\.nonGMS | boolean | 
+action\_result\.data\.\*\.device\.authOnly | boolean | 
+action\_result\.data\.\*\.device\.multiUser | boolean | 
+action\_result\.data\.\*\.device\.TLVVersion | numeric | 
+action\_result\.data\.\*\.device\.migrationStatus | string | 
+action\_result\.data\.\*\.device\.temporarySessionOnly | boolean | 
+action\_result\.data\.\*\.messages | string | 
+action\_result\.data\.\*\.totalCount | numeric | 

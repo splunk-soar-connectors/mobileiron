@@ -13,7 +13,6 @@
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 MOBILEIRON_DEFAULT_TIMEOUT = 30
-
 MOBILEIRON_JSON_DEVICE_URL = "url"
 MOBILEIRON_JSON_USERNAME = "username"
 MOBILEIRON_JSON_PASSSWORD = "password"

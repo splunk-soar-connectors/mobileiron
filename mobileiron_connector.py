@@ -1,6 +1,6 @@
 # File: mobileiron_connector.py
 #
-# Copyright (c) 2016-2022 Splunk Inc.
+# Copyright (c) 2016-2025 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,31 +29,28 @@ from mobileiron_consts import *
 
 # Define the App Class
 class MobileIronConnector(BaseConnector):
-
     ACTION_ID_LIST_DEVICES = "list_devices"
     ACTION_ID_LOCK_DEVICE = "lock_device"
     ACTION_ID_UNLOCK_DEVICE = "unlock_device"
     ACTION_ID_GET_SYSTEM_INFO = "get_system_info"
 
     def __init__(self):
-
         # Call the BaseConnectors init first
-        super(MobileIronConnector, self).__init__()
+        super().__init__()
 
     def initialize(self):
-
         config = self.get_config()
 
         # Base URL
         self._base_url = config[MOBILEIRON_JSON_DEVICE_URL]
-        if self._base_url.endswith('/'):
+        if self._base_url.endswith("/"):
             self._base_url = self._base_url[:-1]
 
-        self._host = self._base_url[self._base_url.find('//') + 2:]
-        self._headers = {'Accept': 'application/json'}
-        self._api_uri = '/api/v1'
+        self._host = self._base_url[self._base_url.find("//") + 2 :]
+        self._headers = {"Accept": "application/json"}
+        self._api_uri = "/api/v1"
 
-        self.__uuid_regex = re.compile(r'[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}\Z', re.I)
+        self.__uuid_regex = re.compile(r"[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}\Z", re.I)
 
         return phantom.APP_SUCCESS
 
@@ -61,7 +58,6 @@ class MobileIronConnector(BaseConnector):
         return phantom.APP_SUCCESS
 
     def _make_rest_call(self, endpoint, request_params, action_result, method="get"):
-
         config = self.get_config()
 
         username = config[MOBILEIRON_JSON_USERNAME]
@@ -73,11 +69,23 @@ class MobileIronConnector(BaseConnector):
 
         try:
             if method == "get":
-                r = requests.get(self._base_url + self._api_uri + endpoint, auth=(username, password), params=request_params, headers=headers,
-                        verify=config[phantom.APP_JSON_VERIFY], timeout=MOBILEIRON_DEFAULT_TIMEOUT)
+                r = requests.get(
+                    self._base_url + self._api_uri + endpoint,
+                    auth=(username, password),
+                    params=request_params,
+                    headers=headers,
+                    verify=config[phantom.APP_JSON_VERIFY],
+                    timeout=MOBILEIRON_DEFAULT_TIMEOUT,
+                )
             else:
-                r = requests.put(self._base_url + self._api_uri + endpoint, auth=(username, password), params=request_params, headers=headers,
-                        verify=config[phantom.APP_JSON_VERIFY], timeout=MOBILEIRON_DEFAULT_TIMEOUT)
+                r = requests.put(
+                    self._base_url + self._api_uri + endpoint,
+                    auth=(username, password),
+                    params=request_params,
+                    headers=headers,
+                    verify=config[phantom.APP_JSON_VERIFY],
+                    timeout=MOBILEIRON_DEFAULT_TIMEOUT,
+                )
         except Exception as e:
             return action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_SERVER_CONNECTION, e), resp_json
 
@@ -91,11 +99,9 @@ class MobileIronConnector(BaseConnector):
                     element.extract()
                 text = soup.get_text()
             except Exception:
-                return (action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_FROM_SERVER, status=r.status_code,
-                    detail=r.text), resp_json)
+                return (action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_FROM_SERVER, status=r.status_code, detail=r.text), resp_json)
             else:
-                return (action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_FROM_SERVER, status=r.status_code,
-                    detail=text), resp_json)
+                return (action_result.set_status(phantom.APP_ERROR, MOBILEIRON_ERR_FROM_SERVER, status=r.status_code, detail=text), resp_json)
 
         try:
             resp_json = r.json()
@@ -105,15 +111,14 @@ class MobileIronConnector(BaseConnector):
         return phantom.APP_SUCCESS, resp_json
 
     def _test_connectivity(self, param):
-
         # Progress
         self.save_progress(MOBILEIRON_USING_BASE_URL, base_url=self._base_url)
 
         # Connectivity
         self.save_progress(phantom.APP_PROG_CONNECTING_TO_ELLIPSES, self._host)
 
-        endpoint = '/dm/devices'
-        request_params = {'limit': '1'}
+        endpoint = "/dm/devices"
+        request_params = {"limit": "1"}
 
         action_result = ActionResult()
 
@@ -130,7 +135,6 @@ class MobileIronConnector(BaseConnector):
         return self.set_status_save_progress(phantom.APP_SUCCESS, MOBILEIRON_SUCC_CONNECTIVITY_TEST)
 
     def _list_devices(self, param):
-
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         try:
@@ -153,8 +157,8 @@ class MobileIronConnector(BaseConnector):
         # Connectivity
         self.save_progress(phantom.APP_PROG_CONNECTING_TO_ELLIPSES, self._host)
 
-        endpoint = '/dm/devices'
-        request_params = {'offset': str(param[MOBILEIRON_JSON_START_INDEX]), 'limit': str(param[MOBILEIRON_JSON_LIMIT])}
+        endpoint = "/dm/devices"
+        request_params = {"offset": str(param[MOBILEIRON_JSON_START_INDEX]), "limit": str(param[MOBILEIRON_JSON_LIMIT])}
 
         action_result.update_summary({MOBILEIRON_JSON_TOTAL_DEVICES: 0})
 
@@ -164,13 +168,13 @@ class MobileIronConnector(BaseConnector):
             self.debug_print(action_result.get_message())
             return action_result.get_status()
 
-        if not response.get('totalCount'):
+        if not response.get("totalCount"):
             return action_result.get_status()
 
-        if not response.get('devices'):
+        if not response.get("devices"):
             return action_result.get_status()
 
-        device_list = response['devices'].get('device')
+        device_list = response["devices"].get("device")
         if not device_list:
             return action_result.get_status()
 
@@ -186,7 +190,6 @@ class MobileIronConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def _lock_device(self, param):
-
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         if not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID]):
@@ -198,20 +201,20 @@ class MobileIronConnector(BaseConnector):
         # Connectivity
         self.save_progress(phantom.APP_PROG_CONNECTING_TO_ELLIPSES, self._host)
 
-        endpoint = '/dm/devices/lock/{0}'.format(param[MOBILEIRON_JSON_UUID])
-        reason = param.get(MOBILEIRON_JSON_REASON, '')
+        endpoint = f"/dm/devices/lock/{param[MOBILEIRON_JSON_UUID]}"
+        reason = param.get(MOBILEIRON_JSON_REASON, "")
         reason += ". " if reason else ""
         reason += "Locked via Phantom"
-        request_params = {'reason': reason}
+        request_params = {"reason": reason}
 
         ret_val, response = self._make_rest_call(endpoint, request_params, action_result, "put")
 
-        message = ''
+        message = ""
 
         if response:
-            if 'messages' in response:
-                if 'message' in response['messages']:
-                    message = "Message from server: {0}".format(response['messages']['message'])
+            if "messages" in response:
+                if "message" in response["messages"]:
+                    message = "Message from server: {}".format(response["messages"]["message"])
 
         if phantom.is_fail(ret_val):
             action_result.append_to_message(message)
@@ -221,7 +224,6 @@ class MobileIronConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS, message)
 
     def _unlock_device(self, param):
-
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         if not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID]):
@@ -233,20 +235,20 @@ class MobileIronConnector(BaseConnector):
         # Connectivity
         self.save_progress(phantom.APP_PROG_CONNECTING_TO_ELLIPSES, self._host)
 
-        endpoint = '/dm/devices/unlock/{0}'.format(param[MOBILEIRON_JSON_UUID])
-        reason = param.get(MOBILEIRON_JSON_REASON, '')
+        endpoint = f"/dm/devices/unlock/{param[MOBILEIRON_JSON_UUID]}"
+        reason = param.get(MOBILEIRON_JSON_REASON, "")
         reason += ". " if reason else ""
         reason += "Unlocked via Phantom"
-        request_params = {'reason': reason}
+        request_params = {"reason": reason}
 
         ret_val, response = self._make_rest_call(endpoint, request_params, action_result)
 
-        message = ''
+        message = ""
 
         if response:
-            if 'messages' in response:
-                if 'message' in response['messages']:
-                    message = "Message from server: {0}".format(response['messages']['message'])
+            if "messages" in response:
+                if "message" in response["messages"]:
+                    message = "Message from server: {}".format(response["messages"]["message"])
 
         if phantom.is_fail(ret_val):
             action_result.append_to_message(message)
@@ -256,7 +258,6 @@ class MobileIronConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS, message)
 
     def _get_system_info(self, param):
-
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         if not self.__uuid_regex.match(param[MOBILEIRON_JSON_UUID]):
@@ -268,16 +269,16 @@ class MobileIronConnector(BaseConnector):
         # Connectivity
         self.save_progress(phantom.APP_PROG_CONNECTING_TO_ELLIPSES, self._host)
 
-        endpoint = '/dm/devices/{0}'.format(param[MOBILEIRON_JSON_UUID])
+        endpoint = f"/dm/devices/{param[MOBILEIRON_JSON_UUID]}"
 
         ret_val, response = self._make_rest_call(endpoint, None, action_result)
 
-        message = ''
+        message = ""
 
         if response:
-            if 'messages' in response:
-                if 'message' in response['messages']:
-                    message = "Message from server: {0}".format(response['messages']['message'])
+            if "messages" in response:
+                if "message" in response["messages"]:
+                    message = "Message from server: {}".format(response["messages"]["message"])
 
         if response:
             action_result.add_data(response)
@@ -290,7 +291,6 @@ class MobileIronConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS, message)
 
     def handle_action(self, param):
-
         ret_val = phantom.APP_SUCCESS
 
         # Get the action that we are supposed to execute for this connector run
@@ -312,12 +312,12 @@ class MobileIronConnector(BaseConnector):
         return ret_val
 
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     import json
     import sys
 
     import pudb
+
     pudb.set_trace()
 
     if len(sys.argv) < 2:

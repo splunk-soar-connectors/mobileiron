@@ -1,7 +1,7 @@
 # MobileIron
 
 Publisher: Splunk Community \
-Connector Version: 2.0.0 \
+Connector Version: 2.0.1 \
 Product Vendor: MobileIron \
 Product Name: MobileIron \
 Minimum Product Version: 5.1.0
